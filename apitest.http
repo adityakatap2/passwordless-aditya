@@ -1,0 +1,26 @@
+@hostname = http://localhost:3005/webauth
+
+
+
+
+post {{hostname}}/registerUser
+Content-Type: application/json
+
+{
+    "username" : "nitesh"
+}
+###
+post {{hostname}}/createApp
+Content-Type: application/json
+
+{
+    "name":"test",
+    "origin" : "http://localhost:3005",
+    "orgId":"lFQN8laTyn6fORu4DVtmr"
+}
+
+###
+delete {{hostname}}/deleteApp/9Iv78-dUcK2CnjKC-bLKf1GehKq4kUOk
+
+###
+get {{hostname}}/getAllApplications/lFQN8laTyn6fORu4DVtmr
