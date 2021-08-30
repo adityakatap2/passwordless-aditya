@@ -3,10 +3,18 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const config = require("../Config/local");
 const base64url = require("base64url");
-const { nanoid } = require("nanoid");
+const { nanoid ,customAlphabet} = require("nanoid");
+const jwt = require("jsonwebtoken");
+const {snakeCase} = require("snake-case")
 
 const logger = require("../Util/logger");
-let { Users, Organization, Audit, Application } = require("../Schema/Schema");
+let {
+  Users,
+  Organization,
+  Audit,
+  Application,
+  Token,
+} = require("../Schema/Schema");
 const {
   generateAttestationOptions,
   verifyAttestationResponse,
@@ -100,6 +108,8 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       .json({ errorCode: -1, errorMessage: "Invalid username !!" });
   }
 
+
+
   let verification;
   try {
     const opts = {
@@ -137,6 +147,17 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       org.devices.push(newDevice);
       org.registered === true;
 
+      if(!org.subdomain)
+      {
+        let subdomain =`${name}-${id()}`;
+        while(org){
+          subdomain =`${name}${nanoid(10)}`;
+          org = await Organization.findOne({subdomain});
+        }
+
+        org.subdomain = subdomain
+      }
+
       await org.save();
       logger.debug(user);
     }
@@ -144,7 +165,9 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
     logger.info(`Registration Status for username ${username} is ${verified}`);
 
     return res.status(201).send({
-      org,
+      uniqueId : org.uniqueId,
+      name : org.userName,
+      subdomain,
       verified,
     });
   } catch (error) {
@@ -408,7 +431,7 @@ router.put("/addDevice", async (req, res) => {
 
 router.post("/removeDevice", async (req, res) => {
   try {
-    let { userId, appId ,credentialID} = req.body;
+    let { userId, appId, credentialID } = req.body;
     if (!userId || !appId)
       return res
         .status(400)
@@ -440,39 +463,121 @@ router.post("/removeDevice", async (req, res) => {
         errorMessage: "Can't remove device,Only 1 device is registered !!",
       });
 
-      const newDevice = user.devices.filter(
-        (device) => device.credentialID !== credentialID
-      );
+    const newDevice = user.devices.filter(
+      (device) => device.credentialID !== credentialID
+    );
 
-      user.devices.length = 0
-      user.devices = newDevice
-      user = await user.save();
-    
-      
-      return res.status(201).json({ errorCode: 0, errorMessage: "Device Removed Successfully !!" });
+    user.devices.length = 0;
+    user.devices = newDevice;
+    user = await user.save();
 
-    
+    return res
+      .status(201)
+      .json({ errorCode: 0, errorMessage: "Device Removed Successfully !!" });
   } catch (error) {
     return res.status(500).json({ errorCode: -1, errorMessage: error.message });
   }
 });
 
-router.get("/getAllRegisteredDevices/:userId",async (req,res) =>{
-  const {userId} = req.params
-  try{
-
-    let user = await Users.findOne({userId});
+router.get("/getAllRegisteredDevices/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    let user = await Users.findOne({ userId });
     if (!user)
-    return res.status(404).json({
-      errorCode: -1,
-      errorMessage: "User Doesn't Exist !!",
-    });
+      return res.status(404).json({
+        errorCode: -1,
+        errorMessage: "User Doesn't Exist !!",
+      });
 
-    res.status(200).json({...user.devices})
-  }
-  catch (error) {
+    res.status(200).json({ ...user.devices });
+  } catch (error) {
     return res.status(500).json({ errorCode: -1, errorMessage: error.message });
   }
+});
+
+router.post("/generateEmailToken", async (req, res) => {
+  try {
+    const data = req.body;
+
+    const token = jwt.sign(
+      {
+        ...data,
+      },
+      config.secret,
+      { expiresIn: "7d" }
+    );
+
+    const accessToken = nanoid(25);
+
+    await Token.create({ accessToken, token });
+
+    return res.status(201).json({ accessToken });
+  } catch (error) {
+    return res.status(500).json({ errorCode: -1, errorMessage: error.message });
+  }
+});
+
+router.post("/verifyEmailToken", async (req, res) => {
+  const { accessToken } = req.body;
+
+  if (!accessToken)
+    return res
+      .status(400)
+      .json({ errorCode: -1, errorMessage: "Access token can't be empty !" });
+
+  const data = await Token.findOne({ accessToken });
+  if (!data)
+    return res
+      .status(404)
+      .json({ errorCode: -1, errorMessage: "Invalid Access Token !" });
+
+  const token = data.token;
+
+  jwt.verify(token, config.secret, async (err, decoded) => {
+    if (err && err.name === "TokenExpiredError") {
+      //await Token.deleteOne({ accessToken });
+      return res
+        .status(500)
+        .json({ errorCode: -1, errorMessage: "Link Expired" });
+    } else if (err)
+      return res.status(500).json({ errorCode: -1, errorMessage: err.message });
+    else {
+     // await Token.deleteOne({ accessToken });
+      return res.status(201).json({ ...decoded });
+    }
+  });
+});
+
+
+router.post("/createSubDomain",async (req,res) =>{
+
+  try{
+  let {name} = req.body
+  if(!name)
+    return res.status(400).json({errorCode:-1,errorMessage:"name can't be empty !"})
+  name = snakeCase(name);
+const id = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)
+  let subdomain =`${name}-${id()}`;
+
+  let  org = await Organization.findOne({subdomain});
+
+
+  while(org){
+    subdomain =`${name}${nanoid(10)}`;
+    org = await Organization.findOne({subdomain});
+  }
+
+
+  res.status(201).json({subdomain});
+
+}
+catch (error) {
+  return res.status(500).json({ errorCode: -1, errorMessage: error.message });
+}
+
+
+
+
 })
 
 module.exports = router;

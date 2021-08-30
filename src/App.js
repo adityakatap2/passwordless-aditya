@@ -1,8 +1,16 @@
-import e from "cors";
-import React from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import verifyEmail from "./Components/VerifyEmail/VerifyEmail";
 
-function App() {
-  return <div className="App">Hello World</div>;
-}
+const App = () => {
+
+  return(
+    <Router>
+      <Switch>
+        
+        <Route path = "/verifyEmail/:accessToken" component={verifyEmail}/>
+      </Switch>
+    </Router>
+  )
+};
 
 export default App;

@@ -14,6 +14,7 @@ const UserSchema = new Schema({
    orgId : {type:String,required:true},
    suspended : {type:Boolean,"default":false},
    userId : {type:String,required:true},
+   emailVerified:{type:Boolean,"default":false},
    
    devices: { type : Array , "default" : [] }  
 },{
@@ -57,14 +58,28 @@ const AuditSchema = new Schema({
     timestamps : true
  });
 
+
+ const tokenSchema = new Schema({
+  
+   accessToken : {type:String,required:true},
+   token :{type:String,required:true}
+},{
+   timestamps:true
+});
+
+
+
+
 const Users = mongoose.model("Users",UserSchema);
 const Application = mongoose.model("Applications",appSchema);
 const Organization = mongoose.model("Organizations",orgSchema);
 const Audit = mongoose.model("Audits",AuditSchema);
+const Token = mongoose.model("Tokens",tokenSchema);
 module.exports = {
    Users,
    Application,
    Audit,
-   Organization
+   Organization,
+   Token
 }
 

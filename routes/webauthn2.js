@@ -3,8 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const config = require("../Config/local");
 const base64url = require("base64url");
-const {nanoid} = require("nanoid");
-
+const { nanoid } = require("nanoid");
 
 const logger = require("../Util/logger");
 let { Users, Organization, Audit } = require("../Schema/Schema");
@@ -15,7 +14,8 @@ const {
   verifyAssertionResponse,
 } = require("@simplewebauthn/server");
 const db = config.mongoURI;
-mongoose.connect(db, {
+mongoose
+  .connect(db, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
@@ -71,8 +71,6 @@ router.post("/generate-attestation-options", async (req, res) => {
   //     errorCode: -1,
   //   });
   // }
-
-  
 
   if (!user) {
     logger.info(`Creating new Entry in DB for user ${username}`);
@@ -573,8 +571,6 @@ router.post("/verify-assertion-android", async (req, res) => {
   });
 });
 
-
-
 router.post("/verify-attestation-ios", async (req, res) => {
   const { body } = req;
   logger.info("Verfication of Attestation started");
@@ -772,8 +768,6 @@ router.post("/verify-assertion-ios", async (req, res) => {
     application: { appName: org.name, appId: base64clientId },
   });
 });
-
-
 
 router.post("/registerApp", async (req, res) => {
   const { name, origin } = req.body;

@@ -24,3 +24,32 @@ delete {{hostname}}/deleteApp/9Iv78-dUcK2CnjKC-bLKf1GehKq4kUOk
 
 ###
 get {{hostname}}/getAllApplications/lFQN8laTyn6fORu4DVtmr
+
+
+###
+post {{hostname}}/generateEmailToken
+Content-Type: application/json
+
+{
+    "username" : "nite0sh@gmail.com",
+    "appId" : "1234ihcndcs"
+}
+
+###
+
+post {{hostname}}/verifyToken
+Content-Type: application/json
+
+{
+  "accessToken": "onjtYYde35sHIoX7uPBJ52sxN"
+}
+
+
+###
+
+post {{hostname}}/createSubDomain
+Content-Type: application/json
+
+{
+    "name" : "bluebricks"
+}
