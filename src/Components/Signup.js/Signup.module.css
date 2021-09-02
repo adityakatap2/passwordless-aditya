@@ -1,0 +1,129 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+.signupContainer {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* background-color: red; */
+}
+.headerContainer {
+  height: 10vh;
+  /* background: #000; */
+}
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  /* background: red; */
+}
+.h1 {
+  font-size: 2rem;
+  margin: 0;
+}
+.h3 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: light;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.imageFlex {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin: 0rem 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  /* background: rgb(236, 236, 236); */
+  opacity: 0.6;
+}
+.textContainer {
+  margin-left: -3.5rem;
+}
+.imageFlex > p {
+  margin-left: 0.3rem;
+}
+.startup {
+  position: absolute;
+  bottom: 0rem;
+  left: 0;
+  width: 50rem;
+  height: 35rem;
+  margin-bottom: -5rem;
+}
+.getStart {
+  color: rgb(0, 110, 255);
+}
+.mainContainer {
+  background-color: #00b252;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.formContainer {
+  width: 50%;
+  height: 400px;
+  background: rgba(255, 255, 255, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: baseline;
+  align-items: center;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.5);
+}
+.register {
+  color: #40a3ff;
+}
+.regText {
+  text-align: center;
+  margin-top: -0.5rem;
+  font-size: 0.9rem;
+  width: 60%;
+}
+.emailInput {
+  width: 70%;
+  height: 2.8rem;
+  background: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+  border: 0.2px solid #40ff80;
+  margin-top: 1rem;
+  padding: 0.1rem 0.2rem;
+}
+.emailInput::placeholder {
+  text-align: center;
+  font-size: 0.8rem;
+}
+.termText {
+  width: 60%;
+  font-size: 0.6rem;
+  margin-top: 2rem;
+}
+.termText > a {
+  text-decoration: none;
+  color: rgba(0, 119, 255, 0.863);
+}
+.signBtn {
+  background: linear-gradient(
+    88.49deg,
+    rgba(68, 143, 255, 0.9) 3.37%,
+    rgba(60, 253, 79, 0.72) 102.5%
+  );
+  width: 15rem;
+  height: 2.5rem;
+  box-shadow: 0px 0px 5px #000000;
+  border: none;
+  font-size: 1.1rem;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+.docText {
+  font-size: 0.9rem;
+  width: 60%;
+  text-align: center;
+  margin-top: 2rem;
+}

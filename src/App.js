@@ -1,8 +1,10 @@
-import e from "cors";
+// import e from "cors";
 import React from "react";
+import Signup from "./Components/Signup.js";
 
 function App() {
-  return <div className="App">Hello World</div>;
+  return <div >
+    <Signup/>
+  </div>;
 }
-
 export default App;
