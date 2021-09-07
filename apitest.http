@@ -1,4 +1,4 @@
-@hostname = http://localhost:3005/webauth
+@hostname = https://demov1.rif4u.com::3115/webauth
 
 
 
@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {
     "name":"test",
-    "origin" : "http://localhost:3005",
+    "origin" : "https://demov1.rif4u.com::3115",
     "orgId":"lFQN8laTyn6fORu4DVtmr"
 }
 
@@ -53,3 +53,21 @@ Content-Type: application/json
 {
     "name" : "bluebricks"
 }
+
+
+###
+
+post {{hostname}}/sendmail
+Content-Type: application/json
+
+{
+    "sendTo" : "nitesh@mollatech.com",
+    "type" : "activation",
+    "name" : "Nitesh Singh",
+    "link" : "https://www.google.com"
+}
+
+
+
+###
+get {{hostname}}/checkSubdomain/test

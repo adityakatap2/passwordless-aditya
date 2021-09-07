@@ -1,0 +1,24 @@
+
+
+
+.wrapper {
+  height: 100vh;
+  margin-bottom: 3rem;
+	overflow: hidden;
+    background: #C2EC98;
+    background-image: linear-gradient(-67deg, #8BC4E4 0%, rgba(134, 193, 226, 0.7) 15%, rgba(119, 183, 219, 0) 99%);
+  }
+
+  .mapResponsive{
+    overflow:hidden;
+    padding-bottom:50%;
+    position:relative;
+    height:0;
+}
+.mapResponsive iframe{
+    left:0;
+    top:0;
+    height:100%;
+    width:100%;
+    position:absolute;
+}

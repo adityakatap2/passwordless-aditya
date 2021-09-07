@@ -32,15 +32,17 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname, "build")));
+
 const server = http.createServer(app);
-app.use(express.static(__dirname + "/public"));
+//app.use(express.static(__dirname + "/public"));
 
 app.use("/webauth", webauthRoute);
-app.get("/*", function (req, res) {
+app.get("*", function (req, res) {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
-server.listen(3005, () => {
+server.listen(config.httpPort, () => {
   logger.info(`server Started go to ${config.origin}`);
 });
 
@@ -55,32 +57,20 @@ io.sockets.on("connection", (socket) => {
   socket.on("msg", (data) => {
     console.log(data);
   });
-  socket.on("join", (id) => {
-    if (isJson(id)) {
-      const { room, uid } = id;
+  socket.on("join", (data) => {
+    if (isJson(data)) {
+      const { id:uid } = data;
 
-      socket.join(room);
+      socket.join(uid);
       socket.on("registration-response", (data) => {
-        socket.to(room).emit("register-client-response", { ...data, uid });
+        socket.to(uid).emit("register-client-response", { ...data, uid });
       });
       socket.on("login-response", (data) => {
-        socket.to(room).emit("login-client-response", { ...data, uid });
+        socket.to(uid).emit("login-client-response", { ...data, uid });
       });
       socket.on("decline-process", (data) => {
-        socket.to(room).emit("decline-process-response", { ...data, uid });
+        socket.to(uid).emit("decline-process-response", { ...data, uid });
       });
-    } else {
-      console.log("join", id);
-      socket.join(id);
-      socket.on("registration-response", (data) => {
-        socket.to(id).emit("register-client-response", data);
-      });
-      socket.on("login-response", (data) => {
-        socket.to(id).emit("login-client-response", data);
-      });
-      socket.on("decline-process", (data) => {
-        socket.to(id).emit("decline-process-response", data);
-      });
-    }
+    } 
   });
 });

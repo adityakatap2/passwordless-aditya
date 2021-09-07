@@ -3,9 +3,11 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const config = require("../Config/local");
 const base64url = require("base64url");
-const { nanoid ,customAlphabet} = require("nanoid");
+const { nanoid, customAlphabet } = require("nanoid");
 const jwt = require("jsonwebtoken");
-const {snakeCase} = require("snake-case")
+const { snakeCase } = require("snake-case");
+const { sendMail } = require("../Util/SendMail");
+const QRcode = require("qrcode");
 
 const logger = require("../Util/logger");
 let {
@@ -50,7 +52,7 @@ router.post("/registerOrg", async (req, res) => {
   if (!uniqueId) uniqueId = nanoid(20);
 
   let org = await Organization.findOne({ username });
-  if (org)
+  if (org && org.registered)
     return res.status(400).json({
       errorCode: -1,
       errorMessage: "Username Already Exist!!",
@@ -83,7 +85,7 @@ router.post("/registerOrg", async (req, res) => {
     };
 
     const options = generateAttestationOptions(opts);
-    return res.status(201).send({ ...options, uniqueId });
+    return res.status(201).send({ ...options });
   } catch (error) {
     return res.status(500).json({ errorCode: -1, errorMessage: error.message });
   }
@@ -108,8 +110,6 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       .json({ errorCode: -1, errorMessage: "Invalid username !!" });
   }
 
-
-
   let verification;
   try {
     const opts = {
@@ -133,8 +133,6 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       (device) => device.credentialID === base64url.encode(credentialID)
     );
 
-    console.log("existingDevice", existingDevice);
-
     if (!existingDevice) {
       logger.info("Adding New Device credentials to user DB");
 
@@ -147,33 +145,137 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       org.devices.push(newDevice);
       org.registered === true;
 
-      if(!org.subdomain)
-      {
-        let subdomain =`${name}-${id()}`;
-        while(org){
-          subdomain =`${name}${nanoid(10)}`;
-          org = await Organization.findOne({subdomain});
-        }
-
-        org.subdomain = subdomain
-      }
-
       await org.save();
-      logger.debug(user);
     }
 
     logger.info(`Registration Status for username ${username} is ${verified}`);
 
     return res.status(201).send({
-      uniqueId : org.uniqueId,
-      name : org.userName,
-      subdomain,
+      uniqueId: org.uniqueId,
+      name: org.userName,
+
       verified,
     });
   } catch (error) {
     logger.error("Error while Verifying Attestation Details");
     logger.error(error.message);
     return res.status(400).send({ errorCode: -1, errorMessage: error.message });
+  }
+});
+
+router.post("/loginOrg", async (req, res) => {
+  let { username } = req.body;
+  try {
+    if (!username)
+      return res
+        .status(400)
+        .json({ errorCode: -1, errorMessage: "Username can't be empty !!" });
+
+    let user = await Organization.findOne({ username });
+
+    if (!user || !user.registered) {
+      return res.json({
+        errorCode: -1,
+        errorMessage: `Username ${username} is not Registered for FIDO2. Please do Registration first !!`,
+      });
+    }
+    const opts = {
+      timeout: 180000,
+      allowCredentials: user.devices.map((dev) => ({
+        id: base64url.toBuffer(dev.credentialID),
+        type: "public-key",
+        transports: ["internal"],
+      })),
+      userVerification: "required",
+      rpID: config.rpID,
+    };
+
+    const options = generateAssertionOptions(opts);
+    return res.status(201).send({ ...options });
+  } catch (error) {
+    return res.status(500).json({ errorCode: -1, errorMessage: error.message });
+  }
+});
+
+router.post("/verify-loginOrg-assertion", async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username)
+      return res
+        .status(404)
+        .json({ errorCode: -1, errorMessage: "Username missing" });
+    const expectedChallenge = req.body.challenge;
+    if (!expectedChallenge)
+      return res
+        .status(404)
+        .json({ errorCode: -1, errorMessage: "Challenge is missing" });
+
+    let user = await Organization.findOne({ username });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ errorCode: -1, errorMessage: "Invalid username !!" });
+    }
+
+    let dbAuthenticator;
+
+    for (const dev of user.devices) {
+      if (dev.credentialID === body.id) {
+        dbAuthenticator = {
+          credentialPublicKey: base64url.toBuffer(dev.credentialPublicKey),
+          credentialID: base64url.toBuffer(dev.credentialID),
+          counter: dev.counter,
+          transports: [],
+        };
+        break;
+      }
+    }
+    let verification;
+
+    if (!dbAuthenticator) {
+      throw new Error(`could not find authenticator matching ${body.id}`);
+    }
+
+    const opts = {
+      credential: body,
+      expectedChallenge: `${expectedChallenge}`,
+      expectedOrigin: org.origin,
+      expectedRPID: org.rpID,
+      authenticator: dbAuthenticator,
+    };
+    verification = verifyAssertionResponse(opts);
+
+    const { verified, assertionInfo } = verification;
+
+    if (!verified) {
+      return res.status(400).json({
+        errorCode: -1,
+        errorMessage: "Authentication Failed !!",
+      });
+    }
+
+    logger.info("updating Device counter");
+
+    user = await Users.updateOne(
+      { "devices.credentialID": body.id },
+      {
+        $set: {
+          "devices.$.counter": assertionInfo.newCounter,
+          "devices.$.lastLogin": new Date(),
+        },
+      },
+      { new: true }
+    );
+
+    logger.info(`Login Counter Updated to ${assertionInfo.newCounter}`);
+
+    logger.info(`Assertion verification Response ${verified}`);
+    return res.status(201).send({
+      user,
+      verified,
+    });
+  } catch (error) {
+    return res.status(400).send({ errorMessage: error.message, errorCode: -1 });
   }
 });
 
@@ -517,7 +619,7 @@ router.post("/generateEmailToken", async (req, res) => {
   }
 });
 
-router.post("/verifyEmailToken", async (req, res) => {
+router.post("/verifyToken", async (req, res) => {
   const { accessToken } = req.body;
 
   if (!accessToken)
@@ -542,42 +644,93 @@ router.post("/verifyEmailToken", async (req, res) => {
     } else if (err)
       return res.status(500).json({ errorCode: -1, errorMessage: err.message });
     else {
-     // await Token.deleteOne({ accessToken });
+      // await Token.deleteOne({ accessToken });
       return res.status(201).json({ ...decoded });
     }
   });
 });
 
+router.post("/createSubDomain", async (req, res) => {
+  try {
+    let { name } = req.body;
+    if (!name)
+      return res
+        .status(400)
+        .json({ errorCode: -1, errorMessage: "name can't be empty !" });
+    name = snakeCase(name);
 
-router.post("/createSubDomain",async (req,res) =>{
+    let org = await Organization.findOne({ name });
+    if (!org) {
+      org.subdomain = name;
+      await org.save();
+      return res.status(201).json({ subdomain: name });
+    }
 
-  try{
-  let {name} = req.body
-  if(!name)
-    return res.status(400).json({errorCode:-1,errorMessage:"name can't be empty !"})
-  name = snakeCase(name);
-const id = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)
-  let subdomain =`${name}-${id()}`;
+    return res
+      .status(500)
+      .json({ errorCode: -1, errorMessage: "Sudomain Already Taken !!" });
+  } catch (error) {
+    return res.status(500).json({ errorCode: -1, errorMessage: error.message });
+  }
+});
 
-  let  org = await Organization.findOne({subdomain});
+router.get("/checkSubdomain/:subdomain", async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    let org = await Organization.findOne({ subdomain });
+    if (!org) {
+      return res
+        .status(404)
+        .json({ errorCode: -1, errorMessage: "Subdomain Not Found" });
+    }
 
+    return res.status(200).json({ errorCode: 0 });
+  } catch (error) {
+    return res.status(500).json({ errorCode: -1, errorMessage: error.message });
+  }
+});
 
-  while(org){
-    subdomain =`${name}${nanoid(10)}`;
-    org = await Organization.findOne({subdomain});
+router.post("/sendmail", async (req, res) => {
+  const { sendTo, type } = req.body;
+  if (!type || !sendTo)
+    res.status(400).json({
+      errorCode: -1,
+      errorMessage: "message,subject or sendTo can't be empty !!",
+    });
+  try {
+    const info = await sendMail(req.body);
+    console.log("Message sent: %s", info.messageId);
+
+    res.status(201).json(info);
+  } catch (error) {
+    res.status(500).json({ errorCode: -1, errorMessage: error.message });
+  }
+});
+
+router.post("/generateQrCode", async (req, res) => {
+  console.log("generating qr");
+  const data = req.body;
+  data.serverUrl = "https://demov1.rif4u.com:4220";
+  let url;
+
+  const token = jwt.sign(data, config.secret, { expiresIn: "5m" });
+  const accessToken = nanoid(36);
+
+  await Token.create({ accessToken, token });
+
+  if (data.platform === "web") url = `${data.path}/${accessToken}`;
+  else {
+    url = accessToken;
   }
 
-
-  res.status(201).json({subdomain});
-
-}
-catch (error) {
-  return res.status(500).json({ errorCode: -1, errorMessage: error.message });
-}
-
-
-
-
-})
+  console.log(url);
+  QRcode.toDataURL(url, function (err, url) {
+    if (err) {
+      return res.status(500).json({ err });
+    } else {
+      return res.status(201).json({ url });
+    }
+  });
+});
 
 module.exports = router;

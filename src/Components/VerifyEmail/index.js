@@ -3,7 +3,7 @@ import Axios from "../../Helper/Axios";
 import { useParams } from "react-router-dom";
 import { startAttestation } from "../../Helper/Fido2Auth";
 
-const VerifyEmail = () => {
+const VerifyEmail = (props) => {
   const [user, setUser] = useState({});
 
   const { accessToken } = useParams();
@@ -16,12 +16,12 @@ const VerifyEmail = () => {
       })
       .catch((error) => {
         let errorMsg = error.message;
-        if (error.response.data.errorMessage)
-          errorMsg = error.response.data.errorMessage;
+        if (error?.response?.data?.errorMessage)
+          errorMsg = error?.response?.data?.errorMessage;
 
         console.log(errorMsg);
       });
-  }, []);
+  }, [accessToken,user]);
   const submitForm = (e) => {
     e.preventDefault();
     registerWithFido();
@@ -30,7 +30,7 @@ const VerifyEmail = () => {
   const registerWithFido = () => {
     Axios.post("registerOrg", { username: user.username })
       .then((response) => {
-        const { challenge, uniqueId } = response.data;
+        const { challenge} = response.data;
         startAttestation(response.data)
           .then((attresp) => {
             console.log(attresp);
@@ -40,13 +40,13 @@ const VerifyEmail = () => {
               challenge,
             })
               .then((response) => {
-                const { subdomain } = response.data;
-                setUser({ ...user, subdomain });
+               
+                console.log(response.data);
               })
               .catch((error) => {
                 let errorMsg = error.message;
-                if (error.response.data.errorMessage)
-                  errorMsg = error.response.data.errorMessage;
+                if (error?.response?.data?.errorMessage)
+                  errorMsg = error?.response?.data?.errorMessage;
 
                 console.log(errorMsg);
               });
@@ -57,8 +57,8 @@ const VerifyEmail = () => {
       })
       .catch((error) => {
         let errorMsg = error.message;
-        if (error.response.data.errorMessage)
-          errorMsg = error.response.data.errorMessage;
+        if (error?.response?.data?.errorMessage)
+          errorMsg = error?.response?.data?.errorMessage;
 
         console.log(errorMsg);
       });
@@ -69,6 +69,7 @@ const VerifyEmail = () => {
   };
   return (
     <form onSubmit={submitForm}>
+      <h1>{props.sub}</h1>
       <input name="username" onChange={saveState} value={user.username} />
       <input name="option" onChange={saveState} />
       <button type="submit">Submit</button>
