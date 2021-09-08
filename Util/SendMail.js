@@ -4,11 +4,11 @@ const config = require("../Config/local");
 
 let transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
+  port: 465,
+  secure: true, // true for 465, false for other ports
   auth: {
-    user: "robot@mollatech.com", // generated ethereal user
-    pass: "robot!@#$", // generated ethereal password
+    user: "help@passwordless.com.au", // generated ethereal user
+    pass: "help!@)(#$*&", // generated ethereal password
   },
 });
 

@@ -21,14 +21,23 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [subDomainExist, setSubDomainExist] = useState(false);
   useEffect(() => {
-    setLoading(true);
+   
     const host = window.location.host;
     const arr = host.split(".").slice(0, host.includes("localhost") ? -1 : -2);
 
     if (arr.length > 0 && arr[0] !== "www") {
+
+      if(arr[0] !== "home")
+      {
+        setLoading(true);
       setSubDomain(arr[0]);
+
       setSubDomainExist(true);
+
+      
       checkSubdomain(arr[0]);
+      }
+
     } else setLoading(false);
   }, []);
 

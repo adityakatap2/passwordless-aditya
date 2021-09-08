@@ -75,9 +75,9 @@ export default function Approve(props) {
   const login = async (user) => {
     try {
       const data = await loginOrgWithFido(user);
-      console.log(data);
+      socket.emit("login-response",data);
     } catch (error) {
-      console.log(error);
+      socket.emit("decline-process",{errorMessage:error.message})
     }
   };
 

@@ -18,10 +18,10 @@ let {
   Token,
 } = require("../Schema/Schema");
 const {
-  generateAttestationOptions,
-  verifyAttestationResponse,
-  generateAssertionOptions,
-  verifyAssertionResponse,
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } = require("@simplewebauthn/server");
 const db = config.mongoURI;
 mongoose
@@ -43,8 +43,12 @@ router.get("/", (req, res) => {
 });
 
 router.post("/registerOrg", async (req, res) => {
-  let { username, uniqueId } = req.body;
-  if (!username)
+  
+  try {
+  let { username, uniqueId,name } = req.body;
+
+
+  if (!username || !name)
     return res
       .status(400)
       .json({ errorCode: -1, errorMessage: "Username can't be empty !!" });
@@ -62,10 +66,13 @@ router.post("/registerOrg", async (req, res) => {
   const data = {
     username,
     uniqueId,
+    name
   };
 
-  try {
+ 
     org = await Organization.create({ ...data });
+
+
     const opts = {
       rpName: config.rpName,
       rpID: config.rpID,
@@ -84,7 +91,7 @@ router.post("/registerOrg", async (req, res) => {
       },
     };
 
-    const options = generateAttestationOptions(opts);
+    const options = generateRegistrationOptions(opts);
     return res.status(201).send({ ...options });
   } catch (error) {
     return res.status(500).json({ errorCode: -1, errorMessage: error.message });
@@ -119,9 +126,10 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       expectedRPID: config.rpID,
     };
 
-    verification = await verifyAttestationResponse(opts);
+    verification = await verifyRegistrationResponse(opts);
+    console.log("verfication",verification);
 
-    const { verified, attestationInfo } = verification;
+    const { verified, registrationInfo:attestationInfo } = verification;
 
     if (!verified) {
       return res.status(400).json({ verified });
@@ -143,7 +151,7 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
         fmt,
       };
       org.devices.push(newDevice);
-      org.registered === true;
+      org.registered =true;
 
       await org.save();
     }
@@ -152,8 +160,8 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
 
     return res.status(201).send({
       uniqueId: org.uniqueId,
-      name: org.userName,
-
+      email: org.username,
+      name:org.name,
       verified,
     });
   } catch (error) {
@@ -164,6 +172,7 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
 });
 
 router.post("/loginOrg", async (req, res) => {
+  console.log(req);
   let { username } = req.body;
   try {
     if (!username)
@@ -190,7 +199,7 @@ router.post("/loginOrg", async (req, res) => {
       rpID: config.rpID,
     };
 
-    const options = generateAssertionOptions(opts);
+    const options = generateAuthenticationOptions(opts);
     return res.status(201).send({ ...options });
   } catch (error) {
     return res.status(500).json({ errorCode: -1, errorMessage: error.message });
@@ -198,13 +207,14 @@ router.post("/loginOrg", async (req, res) => {
 });
 
 router.post("/verify-loginOrg-assertion", async (req, res) => {
+  
   try {
-    const { username } = req.body;
+    const { username,id,challenge } = req.body;
     if (!username)
       return res
         .status(404)
         .json({ errorCode: -1, errorMessage: "Username missing" });
-    const expectedChallenge = req.body.challenge;
+    const expectedChallenge = challenge;
     if (!expectedChallenge)
       return res
         .status(404)
@@ -220,7 +230,7 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
     let dbAuthenticator;
 
     for (const dev of user.devices) {
-      if (dev.credentialID === body.id) {
+      if (dev.credentialID === id) {
         dbAuthenticator = {
           credentialPublicKey: base64url.toBuffer(dev.credentialPublicKey),
           credentialID: base64url.toBuffer(dev.credentialID),
@@ -233,19 +243,19 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
     let verification;
 
     if (!dbAuthenticator) {
-      throw new Error(`could not find authenticator matching ${body.id}`);
+      throw new Error(`could not find authenticator matching ${id}`);
     }
 
     const opts = {
-      credential: body,
-      expectedChallenge: `${expectedChallenge}`,
-      expectedOrigin: org.origin,
-      expectedRPID: org.rpID,
+      credential: req.body,
+      expectedChallenge: expectedChallenge,
+      expectedOrigin: config.origin,
+      expectedRPID: config.rpId,
       authenticator: dbAuthenticator,
     };
-    verification = verifyAssertionResponse(opts);
+    verification = verifyAuthenticationResponse(opts);
 
-    const { verified, assertionInfo } = verification;
+    const { verified, authenticationInfo:assertionInfo } = verification;
 
     if (!verified) {
       return res.status(400).json({
@@ -257,7 +267,7 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
     logger.info("updating Device counter");
 
     user = await Users.updateOne(
-      { "devices.credentialID": body.id },
+      { "devices.credentialID": id },
       {
         $set: {
           "devices.$.counter": assertionInfo.newCounter,
@@ -691,9 +701,10 @@ router.get("/checkSubdomain/:subdomain", async (req, res) => {
 });
 
 router.post("/sendmail", async (req, res) => {
+  console.log(req.body);
   const { sendTo, type } = req.body;
   if (!type || !sendTo)
-    res.status(400).json({
+    return res.status(400).json({
       errorCode: -1,
       errorMessage: "message,subject or sendTo can't be empty !!",
     });

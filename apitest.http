@@ -1,12 +1,13 @@
-@hostname = https://demov1.rif4u.com::3115/webauth
+@hostname = https://home.passwordless.com.au:3115/webauth
 
 
 
 
-post {{hostname}}/registerUser
+post {{hostname}}/registerOrg
 Content-Type: application/json
 
 {
+    "name":"nitesh",
     "username" : "nitesh"
 }
 ###
@@ -15,7 +16,7 @@ Content-Type: application/json
 
 {
     "name":"test",
-    "origin" : "https://demov1.rif4u.com::3115",
+    "origin" : "https://home.passwordless.com.au:3115",
     "orgId":"lFQN8laTyn6fORu4DVtmr"
 }
 

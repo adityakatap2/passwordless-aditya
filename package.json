@@ -5,7 +5,8 @@
   "dependencies": {
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
-    "@simplewebauthn/server": "^3.0.0",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "@simplewebauthn/server": "^4.1.0",
     "axios": "^0.21.1",
     "base64url": "^3.0.1",
     "cookie-parser": "^1.4.5",

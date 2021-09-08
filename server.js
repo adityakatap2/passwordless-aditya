@@ -51,12 +51,10 @@ const io = require("socket.io")(server, {
     origin: "*",
   },
 });
-io.sockets.on("error", (e) => console.log(e));
+io.sockets.on("error", (e) => console.log("error",e.message));
 
 io.sockets.on("connection", (socket) => {
-  socket.on("msg", (data) => {
-    console.log(data);
-  });
+ 
   socket.on("join", (data) => {
     if (isJson(data)) {
       const { id:uid } = data;

@@ -6,15 +6,18 @@ import socket from "../../Helper/SocketIOConfig";
 
 import Modal from "../Modal";
 
-import { registerOrgWithFido,loginOrgWithFido } from "../../Helper/Fido2Auth";
+import { registerOrgWithFido, loginOrgWithFido } from "../../Helper/Fido2Auth";
 import { generateQRCode, sendMail, getOS } from "../../Helper/Util";
 import { nanoid } from "nanoid";
 import Axios from "../../Helper/Axios";
-
+import React from "react";
+import {useHistory} from "react-router-dom"
 export default function Register(props) {
   const [errorMessage, setErrorMessage] = useState("");
   const [fidoSupported, setFidoSupported] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  const history = useHistory();
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -25,6 +28,9 @@ export default function Register(props) {
     device: "",
   });
   const [showModal, setModalShow] = useState(false);
+
+  const userRef = React.createRef();
+  userRef.current = user;
 
   useEffect(() => {
     detectWebAuthnSupport();
@@ -38,36 +44,52 @@ export default function Register(props) {
       console.log("connected", socket.id);
     });
     socket.on("register-client-response", (data) => {
-      if (data.verified) generateTokenAndSendMail(data.uniqueId);
+      
+      closeModal();
+      if (data.verified) generateTokenAndSendMail(data);
+
     });
 
     socket.on("login-client-response", (data) => {
-      if (data.verified) generateTokenAndSendMail(data.uniqueId);
+      closeModal();
     });
 
     socket.on("decline-process-response", (data) => {
-      console.log(data);
+     
 
       closeModal();
     });
   }, []);
 
-  const generateTokenAndSendMail = async (uniqueId) => {
+  const generateTokenAndSendMail = async (data) => {
+    console.log("generateToken and send mail", data);
+    const { email, name, uniqueId } = data;
+
     try {
-      const accessToken = await Axios.post("generateToken", {
-        email: user.email,
+      const response = await Axios.post("generateEmailToken", {
+        email,
+        name,
+
         uniqueId,
       });
 
-      const data = {
-        sendTo: user.email,
-        name: user.name,
+      const { accessToken } = response.data;
+
+      const emailData = {
+        sendTo: email,
+        name: name,
         link: `${window.location.origin}/verifyEmail/${accessToken}`,
         type: "activation",
       };
 
-      await sendMail(data);
-      
+      console.log("email data", emailData);
+     await sendMail(emailData);
+     history.push({
+       pathname:"/mailSentSuccess",
+       state: { email,name,accessToken }
+      })
+
+     
     } catch (error) {
       console.log(error);
     }
@@ -142,6 +164,7 @@ export default function Register(props) {
         platform,
         email: user.email,
         path: `${window.location.origin}/approve`,
+        name:user.name,
         reqTime: new Date(),
         id: nanoid(20),
       };

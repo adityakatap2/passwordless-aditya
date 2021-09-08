@@ -33,7 +33,7 @@ const appSchema = new Schema({
 });
 
 const orgSchema = new Schema({
-
+   name: {type:String,required:true},
    username : {type:String,required:true},
    uniqueId : {type:String,required:true},
    devices: { type : Array , "default" : [] } ,
