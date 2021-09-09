@@ -63,13 +63,13 @@ export default function Register(props) {
 
   const generateTokenAndSendMail = async (data) => {
     console.log("generateToken and send mail", data);
-    const { email, name, uniqueId } = data;
+    const { email, name, uniqueId,userId } = data;
 
     try {
       const response = await Axios.post("generateEmailToken", {
         email,
         name,
-
+userId,
         uniqueId,
       });
 

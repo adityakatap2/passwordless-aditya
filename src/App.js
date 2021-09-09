@@ -21,23 +21,18 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [subDomainExist, setSubDomainExist] = useState(false);
   useEffect(() => {
-   
     const host = window.location.host;
     const arr = host.split(".").slice(0, host.includes("localhost") ? -1 : -2);
 
     if (arr.length > 0 && arr[0] !== "www") {
-
-      if(arr[0] !== "home")
-      {
+      if (arr[0] !== "home") {
         setLoading(true);
-      setSubDomain(arr[0]);
+        setSubDomain(arr[0]);
 
-      setSubDomainExist(true);
+        setSubDomainExist(true);
 
-      
-      checkSubdomain(arr[0]);
+        checkSubdomain(arr[0]);
       }
-
     } else setLoading(false);
   }, []);
 
@@ -45,6 +40,8 @@ const App = () => {
     Axios.get(`checkSubdomain/${name}`)
       .then((response) => {
         setLoading(false);
+        const { errorCode } = response.data;
+        if (errorCode === -1) setRedirect(true);
       })
       .catch((error) => {
         console.log(error);

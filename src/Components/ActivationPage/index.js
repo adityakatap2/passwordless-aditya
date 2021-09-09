@@ -45,7 +45,7 @@ const {email,name,accessToken} = state;
            { error.status && <Alert onClose={() => {setError({status:false,message:""})}} severity="error">{error.message}</Alert>}
            { success.status && <Alert onClose={() => {setSucccess({status:false,message:""})}} severity="success">{success.message}</Alert>}
                 <Email className={classes.email} />
-                <h2 className={classes.h2}>Verfy Your Email</h2>
+                <h2 className={classes.h2}>Verify Your Email</h2>
                 <p className={classes.emailText}>
                    
                     We Just sent an email to {email}</p>

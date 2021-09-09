@@ -73,90 +73,7 @@ const Activation = ({name,link}) =>{
         </style>
       </head>
       <body>
-        <div>
-          <!--[if mso | IE]>
-    <table align="center" border="0" cellpadding="0" cellspacing="0" style="width:600px;" width="600"><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-          <div style='margin:0px auto;max-width:600px;'>
-            <table align='center' border='0' cellpadding='0' cellspacing='0' role='presentation' style='width:100%;'>
-              <tbody>
-                <tr>
-                  <td style='direction:ltr;font-size:0px;padding:40px;text-align:center;vertical-align:top;'>
-                    <!--[if mso | IE]>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top;width:600px;">
-    <![endif]-->
-                    <div class='dys-column-per-100 outlook-group-fix' style='direction:ltr;display:inline-block;font-size:13px;text-align:left;vertical-align:top;width:100%;'>
-                      <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='vertical-align:top;' width='100%'>
-                        <tr>
-                          <td align='left' style='font-size:0px;padding:0px;word-break:break-word;'>
-                            <table border='0' cellpadding='0' cellspacing='0' style='cellpadding:0;cellspacing:0;color:#000000;font-family:Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;' width='100%'>
-                              <tbody>
-                                <tr>
-                                  <td align='left'>
-                                    <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='border-collapse:collapse;border-spacing:0px;'>
-                                      <tbody>
-                                        <tr>
-                                          <td style='width:250px;'>
-                                            <img alt='BlueBricks' height='auto' src="https://www.blue-bricks.com/wp-content/uploads/2019/10/logo-inverse-191x52.png" style='border:none;display:block;font-size:13px;height:auto;outline:none;text-decoration:none;width:100%;' width='250' />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </td>
-                                  <td align='right' style='vertical-align:bottom;' width='34px'>
-                                    <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='border-collapse:collapse;border-spacing:0px;'>
-                                      <tbody>
-                                        <tr>
-                                          <td style='width:30px;'>
-                                            <img alt='Descriptive Alt Text' height='auto' src='https://assets.opensourceemails.com/imgs/lifestyle/Fct0c2xMRUKPHBdMCcnf_icon-facebook.png' style='border:none;display:block;font-size:13px;height:auto;outline:none;text-decoration:none;width:100%;' width='30' />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </td>
-                                  <td align='right' style='vertical-align:bottom;' width='34px'>
-                                    <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='border-collapse:collapse;border-spacing:0px;'>
-                                      <tbody>
-                                        <tr>
-                                          <td style='width:30px;'>
-                                            <img alt='Descriptive Alt Text' height='auto' src='https://assets.opensourceemails.com/imgs/lifestyle/BHraIlyShi7koHdeMEbD_icon-linkedin.png' style='border:none;display:block;font-size:13px;height:auto;outline:none;text-decoration:none;width:100%;' width='30' />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </td>
-                                  <td align='right' style='vertical-align:bottom;' width='34px'>
-                                    <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='border-collapse:collapse;border-spacing:0px;'>
-                                      <tbody>
-                                        <tr>
-                                          <td style='width:30px;'>
-                                            <img alt='Descriptive Alt Text' height='auto' src='https://assets.opensourceemails.com/imgs/lifestyle/Rc7jq7J2ToyH0IGSptTY_icon-twitter.png' style='border:none;display:block;font-size:13px;height:auto;outline:none;text-decoration:none;width:100%;' width='30' />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                    <!--[if mso | IE]>
-    </td></tr></table>
-    <![endif]-->
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <!--[if mso | IE]>
-    </td></tr></table>
-    <![endif]-->
-          <!--[if mso | IE]>
-    <table align="center" border="0" cellpadding="0" cellspacing="0" style="width:600px;" width="600"><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
+
           <div style='margin:0px auto;max-width:600px;'>
             <table align='center' border='0' cellpadding='0' cellspacing='0' role='presentation' style='width:100%;'>
               <tbody>
@@ -170,9 +87,27 @@ const Activation = ({name,link}) =>{
                         <tr>
                           <td align='left' style='font-size:0px;padding:10px 25px;word-break:break-word;'>
                             <div style='color:#000000;font-family:Helvetica, Arial, sans-serif;font-size:18px;font-weight:light;line-height:28px;text-align:left;'>
-                            Hey ${name}, <br> <br>
+                            Dear ${name}, <br> <br>
                             
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            We have received your request to activate your new account with us. Please click the link below to complete your activation and proceed further. 
+                            
+                            
+                            <br>
+                            <br>
+                          
+                            <a href=${link} style='display: block;
+                            width: 150px;
+                            height: 40px;
+                            background: #4E9CAF;
+                            padding: 10px;
+                            text-align: center;
+                            border-radius: 5px;
+                            color: white;
+                            font-weight: bold;
+                            line-height: 25px;font-family:Helvetica, Arial, sans-serif;font-size:20px;margin:0;text-decoration:none;text-transform:none;' target='_blank'>
+                            Activate Account
+                           </a>
+                           
                             </div>
                           </td>
                         </tr>
@@ -189,45 +124,7 @@ const Activation = ({name,link}) =>{
           <!--[if mso | IE]>
     </td></tr></table>
     <![endif]-->
-          <!--[if mso | IE]>
-    <table align="center" border="0" cellpadding="0" cellspacing="0" style="width:600px;" width="600"><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-          <div style='margin:0px auto;max-width:600px;'>
-            <table align='center' border='0' cellpadding='0' cellspacing='0' role='presentation' style='width:100%;'>
-              <tbody>
-                <tr>
-                  <td style='direction:ltr;font-size:0px;padding:20px;text-align:center;vertical-align:top;'>
-                    <!--[if mso | IE]>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top;width:600px;">
-    <![endif]-->
-                    <div class='dys-column-per-100 outlook-group-fix' style='direction:ltr;display:inline-block;font-size:13px;text-align:left;vertical-align:top;width:100%;'>
-                      <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='vertical-align:top;' width='100%'>
-                        <tr>
-                          <td align='left' style='font-size:0px;padding:10px 25px;word-break:break-word;' vertical-align='middle'>
-                            <table border='0' cellpadding='0' cellspacing='0' role='presentation' style='border-collapse:separate;line-height:100%;'>
-                              <tr>
-                                <td align='center' bgcolor='BLACK' role='presentation' style='background-color:BLACK;border:none;border-radius:0px;cursor:auto;padding:10px 25px;' valign='middle'>
-                                  <a href=${link} style='background:BLACK;color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:22px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;' target='_blank'>
-                                    Click Here To Complete Registration
-                                  </a>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                    <!--[if mso | IE]>
-    </td></tr></table>
-    <![endif]-->
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <!--[if mso | IE]>
-    </td></tr></table>
-    <![endif]-->
+  
         </div>
       </body>
     </html>`,

@@ -32,16 +32,28 @@ const appSchema = new Schema({
    timestamps : true
 });
 
-const orgSchema = new Schema({
+const operatorSchema = new Schema({
+   userId:{type:String,required:true},
    name: {type:String,required:true},
    username : {type:String,required:true},
    uniqueId : {type:String,required:true},
    devices: { type : Array , "default" : [] } ,
-   registered:{type:Boolean,"default":false} 
-
+   registered:{type:Boolean,"default":false},
+   emailVerified: {type:Boolean,"default":false},
+  
 },{
    timestamps:true
 });
+
+
+const orgSchema = new Schema({
+   uniqueId : {type:String,required:true},
+   subdomain : {type:String,default:""},
+   name:{type:String,default:""},
+},{
+   timestamps:true
+})
+
 
 const AuditSchema = new Schema({
   
@@ -71,6 +83,7 @@ const AuditSchema = new Schema({
 
 
 const Users = mongoose.model("Users",UserSchema);
+const Operators = mongoose.model("Operators",operatorSchema);
 const Application = mongoose.model("Applications",appSchema);
 const Organization = mongoose.model("Organizations",orgSchema);
 const Audit = mongoose.model("Audits",AuditSchema);
@@ -80,6 +93,7 @@ module.exports = {
    Application,
    Audit,
    Organization,
-   Token
+   Token,
+   Operators
 }
 

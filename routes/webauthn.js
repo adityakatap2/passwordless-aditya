@@ -16,6 +16,7 @@ let {
   Audit,
   Application,
   Token,
+  Operators,
 } = require("../Schema/Schema");
 const {
   generateRegistrationOptions,
@@ -42,45 +43,47 @@ router.get("/", (req, res) => {
   res.send("hello programmer, Your APIs are Live !!");
 });
 
-router.post("/registerOrg", async (req, res) => {
-  
+router.post("/registerOperator", async (req, res) => {
   try {
-  let { username, uniqueId,name } = req.body;
+    let { username, uniqueId, name } = req.body;
 
+    if (!username || !name)
+      return res
+        .status(400)
+        .json({ errorCode: -1, errorMessage: "Username can't be empty !!" });
 
-  if (!username || !name)
-    return res
-      .status(400)
-      .json({ errorCode: -1, errorMessage: "Username can't be empty !!" });
+    let userId = nanoid(24);
 
-  if (!uniqueId) uniqueId = nanoid(20);
+    let operator = await Operators.findOne({ username });
+    if (operator && operator.registered)
+      return res.status(400).json({
+        errorCode: -1,
+        errorMessage: "Username Already Exist!!",
+        id: operator.userId,
+      });
 
-  let org = await Organization.findOne({ username });
-  if (org && org.registered)
-    return res.status(400).json({
-      errorCode: -1,
-      errorMessage: "Username Already Exist!!",
-      id: org.uniqueId,
-    });
+    if (!uniqueId) {
+      uniqueId = nanoid(20);
+      await Organization.create({ uniqueId });
+    }
 
-  const data = {
-    username,
-    uniqueId,
-    name
-  };
+    const data = {
+      username,
+      uniqueId,
+      name,
+      userId,
+    };
 
- 
-    org = await Organization.create({ ...data });
-
+    operator = await Operators.create({ ...data });
 
     const opts = {
       rpName: config.rpName,
       rpID: config.rpID,
-      userID: uniqueId,
+      userID: userId,
       userName: username,
       timeout: 60000,
       attestationType: "direct",
-      excludeCredentials: org.devices.map((dev) => ({
+      excludeCredentials: operator.devices.map((dev) => ({
         id: dev.credentialID,
         type: "public-key",
         transports: ["ble", "internal"],
@@ -98,7 +101,7 @@ router.post("/registerOrg", async (req, res) => {
   }
 });
 
-router.post("/verify-registerorg-attestation", async (req, res) => {
+router.post("/verify-registerOperator-attestation", async (req, res) => {
   const { username } = req.body;
   if (!username)
     return res
@@ -110,8 +113,8 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
       .status(404)
       .json({ errorCode: -1, errorMessage: "Challenge is missing" });
 
-  const org = await Organization.findOne({ username });
-  if (!org) {
+  const operator = await Operators.findOne({ username });
+  if (!operator) {
     return res
       .status(404)
       .json({ errorCode: -1, errorMessage: "Invalid username !!" });
@@ -127,9 +130,9 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
     };
 
     verification = await verifyRegistrationResponse(opts);
-    console.log("verfication",verification);
+    console.log("verfication", verification);
 
-    const { verified, registrationInfo:attestationInfo } = verification;
+    const { verified, registrationInfo: attestationInfo } = verification;
 
     if (!verified) {
       return res.status(400).json({ verified });
@@ -137,7 +140,7 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
     const { credentialPublicKey, credentialID, counter, fmt } = attestationInfo;
     logger.info("user have registerd using platform : " + fmt);
 
-    const existingDevice = org.devices.find(
+    const existingDevice = operator.devices.find(
       (device) => device.credentialID === base64url.encode(credentialID)
     );
 
@@ -150,18 +153,19 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
         counter,
         fmt,
       };
-      org.devices.push(newDevice);
-      org.registered =true;
+      operator.devices.push(newDevice);
+      operator.registered = true;
 
-      await org.save();
+      await operator.save();
     }
 
     logger.info(`Registration Status for username ${username} is ${verified}`);
 
     return res.status(201).send({
-      uniqueId: org.uniqueId,
-      email: org.username,
-      name:org.name,
+      userId: operator.userId,
+      uniqueId: operator.uniqueId,
+      email: operator.username,
+      name: operator.name,
       verified,
     });
   } catch (error) {
@@ -171,7 +175,7 @@ router.post("/verify-registerorg-attestation", async (req, res) => {
   }
 });
 
-router.post("/loginOrg", async (req, res) => {
+router.post("/loginOperator", async (req, res) => {
   console.log(req);
   let { username } = req.body;
   try {
@@ -180,7 +184,7 @@ router.post("/loginOrg", async (req, res) => {
         .status(400)
         .json({ errorCode: -1, errorMessage: "Username can't be empty !!" });
 
-    let user = await Organization.findOne({ username });
+    let user = await Operators.findOne({ username });
 
     if (!user || !user.registered) {
       return res.json({
@@ -206,10 +210,9 @@ router.post("/loginOrg", async (req, res) => {
   }
 });
 
-router.post("/verify-loginOrg-assertion", async (req, res) => {
-  
+router.post("/verify-loginOperator-assertion", async (req, res) => {
   try {
-    const { username,id,challenge } = req.body;
+    const { username, id, challenge } = req.body;
     if (!username)
       return res
         .status(404)
@@ -220,7 +223,7 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
         .status(404)
         .json({ errorCode: -1, errorMessage: "Challenge is missing" });
 
-    let user = await Organization.findOne({ username });
+    let user = await Operators.findOne({ username });
     if (!user) {
       return res
         .status(404)
@@ -255,7 +258,7 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
     };
     verification = verifyAuthenticationResponse(opts);
 
-    const { verified, authenticationInfo:assertionInfo } = verification;
+    const { verified, authenticationInfo: assertionInfo } = verification;
 
     if (!verified) {
       return res.status(400).json({
@@ -266,7 +269,7 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
 
     logger.info("updating Device counter");
 
-    user = await Users.updateOne(
+    user = await Operators.updateOne(
       { "devices.credentialID": id },
       {
         $set: {
@@ -288,6 +291,58 @@ router.post("/verify-loginOrg-assertion", async (req, res) => {
     return res.status(400).send({ errorMessage: error.message, errorCode: -1 });
   }
 });
+
+
+router.put("/updateOrg/:uniqueId",async (req,res) =>{
+const {uniqueId} = req.params
+try{
+
+  let org = await Organization.findOne({uniqueId});
+  if(!org)
+  {
+    return res.status(404).json({errorCode:-1,errorMessage:"Invalid UniqueId, Organization not found"})
+  }
+
+  const {subdomain,name} = req.body
+  if(subdomain)
+    org.subdomain = subdomain
+  if(name)
+    org.name = name
+  await org.save();
+
+  return res.status(201).json({errorCode:0,errorMessage:"organizations Details updated Successfully"});
+
+}
+catch(error){
+  return res.status(500).send({ errorMessage: error.message, errorCode: -1 });
+}
+
+})
+
+router.put("/updateOperator/:userId",async (req,res) =>{
+  const {userId} = req.params
+  try{
+  
+    let operator = await Operators.findOne({userId});
+    if(!operator)
+    {
+      return res.status(404).json({errorCode:-1,errorMessage:"Invalid userId, Organization not found"})
+    }
+  
+
+ operator.emailVerified = req.body.emailVerified || operator.emailVerified
+
+ await operator.save();
+
+  
+    return res.status(201).json({errorCode:0,errorMessage:"User Details Updated Successfully"});
+  
+  }
+  catch(error){
+    return res.status(500).send({ errorMessage: error.message, errorCode: -1 });
+  }
+
+})
 
 router.post("/createApp", async (req, res) => {
   let { name, origin, orgId } = req.body;
@@ -669,7 +724,7 @@ router.post("/createSubDomain", async (req, res) => {
         .json({ errorCode: -1, errorMessage: "name can't be empty !" });
     name = snakeCase(name);
 
-    let org = await Organization.findOne({ name });
+    let org = await Organization.findOne({ subdomain });
     if (!org) {
       org.subdomain = name;
       await org.save();
@@ -687,10 +742,21 @@ router.post("/createSubDomain", async (req, res) => {
 router.get("/checkSubdomain/:subdomain", async (req, res) => {
   try {
     const { subdomain } = req.params;
+
+   
+    const excludedomains = ["home","app","admin","test"]
+
+if(excludedomains.includes(subdomain) || subdomain.length < 5 ){
+  return res
+        .status(200)
+        .json({ errorCode: 0});
+    }
+
+
     let org = await Organization.findOne({ subdomain });
     if (!org) {
       return res
-        .status(404)
+        .status(200)
         .json({ errorCode: -1, errorMessage: "Subdomain Not Found" });
     }
 
