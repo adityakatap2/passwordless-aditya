@@ -1,0 +1,11 @@
+
+.appBarFlexRow{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.color{
+  background-color: #9eff95;
+}

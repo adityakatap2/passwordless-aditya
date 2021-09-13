@@ -1,11 +1,9 @@
 // import e from "cors";
 import React from "react";
-import ActivationPage from "./Components/ActivationPage/index.js";
-import Signup from "./Components/Signup.js";
-
+import Dashboard from './Components/Dashboard'
 function App() {
   return <div >
-    <ActivationPage/>
+      <Dashboard />
   </div>;
 }
 export default App;
