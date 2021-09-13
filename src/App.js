@@ -39,6 +39,7 @@ const App = () => {
   const checkSubdomain = async (name) => {
     Axios.get(`checkSubdomain/${name}`)
       .then((response) => {
+        console.log(response.data);
         setLoading(false);
         const { errorCode } = response.data;
         if (errorCode === -1) setRedirect(true);
@@ -73,7 +74,7 @@ const App = () => {
                 {subDomainExist ? (
                   <Route
                     exact
-                    path="/"
+                    path="/dashboard"
                     component={() => <Dashboard sub={subDomain} />}
                   />
                 ) : (

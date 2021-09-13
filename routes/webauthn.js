@@ -292,57 +292,62 @@ router.post("/verify-loginOperator-assertion", async (req, res) => {
   }
 });
 
-
-router.put("/updateOrg/:uniqueId",async (req,res) =>{
-const {uniqueId} = req.params
-try{
-
-  let org = await Organization.findOne({uniqueId});
-  if(!org)
-  {
-    return res.status(404).json({errorCode:-1,errorMessage:"Invalid UniqueId, Organization not found"})
-  }
-
-  const {subdomain,name} = req.body
-  if(subdomain)
-    org.subdomain = subdomain
-  if(name)
-    org.name = name
-  await org.save();
-
-  return res.status(201).json({errorCode:0,errorMessage:"organizations Details updated Successfully"});
-
-}
-catch(error){
-  return res.status(500).send({ errorMessage: error.message, errorCode: -1 });
-}
-
-})
-
-router.put("/updateOperator/:userId",async (req,res) =>{
-  const {userId} = req.params
-  try{
-  
-    let operator = await Operators.findOne({userId});
-    if(!operator)
-    {
-      return res.status(404).json({errorCode:-1,errorMessage:"Invalid userId, Organization not found"})
+router.put("/updateOrg/:uniqueId", async (req, res) => {
+  const { uniqueId } = req.params;
+  try {
+    let org = await Organization.findOne({ uniqueId });
+    if (!org) {
+      return res
+        .status(404)
+        .json({
+          errorCode: -1,
+          errorMessage: "Invalid UniqueId, Organization not found",
+        });
     }
-  
 
- operator.emailVerified = req.body.emailVerified || operator.emailVerified
+    const { subdomain, name } = req.body;
+    if (subdomain) org.subdomain = subdomain;
+    if (name) org.name = name;
+    await org.save();
 
- await operator.save();
-
-  
-    return res.status(201).json({errorCode:0,errorMessage:"User Details Updated Successfully"});
-  
-  }
-  catch(error){
+    return res
+      .status(201)
+      .json({
+        errorCode: 0,
+        errorMessage: "organizations Details updated Successfully",
+      });
+  } catch (error) {
     return res.status(500).send({ errorMessage: error.message, errorCode: -1 });
   }
+});
 
-})
+router.put("/updateOperator/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    let operator = await Operators.findOne({ userId });
+    if (!operator) {
+      return res
+        .status(404)
+        .json({
+          errorCode: -1,
+          errorMessage: "Invalid userId, Organization not found",
+        });
+    }
+
+    operator.emailVerified = req.body.emailVerified || operator.emailVerified;
+
+    await operator.save();
+
+    return res
+      .status(201)
+      .json({
+        errorCode: 0,
+        errorMessage: "User Details Updated Successfully",
+      });
+  } catch (error) {
+    return res.status(500).send({ errorMessage: error.message, errorCode: -1 });
+  }
+});
 
 router.post("/createApp", async (req, res) => {
   let { name, origin, orgId } = req.body;
@@ -540,6 +545,23 @@ router.post("/verify-registerUser-attestation", async (req, res) => {
     logger.error("Error while Verifying Attestation Details");
     logger.error(error.message);
     return res.status(400).send({ errorCode: -1, errorMessage: error.message });
+  }
+});
+
+router.post("/checkOperator", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email)
+      return res
+        .status(400)
+        .json({ errorCode: -1, errorMessage: "Email Can't be empty" });
+
+    let user = await Operators.findOne({ username: email });
+    if (!user) return res.status(201).json({ errorCode: 1 });
+    return res.status(201).json({ errorCode: 0 });
+  } catch (error) {
+    return res.status(201).json({ errorCode: -1, errorMessage: error.message });
   }
 });
 
@@ -743,15 +765,11 @@ router.get("/checkSubdomain/:subdomain", async (req, res) => {
   try {
     const { subdomain } = req.params;
 
-   
-    const excludedomains = ["home","app","admin","test"]
+    const excludedomains = ["home", "app", "admin", "test"];
 
-if(excludedomains.includes(subdomain) || subdomain.length < 5 ){
-  return res
-        .status(200)
-        .json({ errorCode: 0});
+    if (excludedomains.includes(subdomain) || subdomain.length < 5) {
+      return res.status(200).json({ errorCode: 0 });
     }
-
 
     let org = await Organization.findOne({ subdomain });
     if (!org) {

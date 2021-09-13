@@ -28,10 +28,10 @@ export const ConfirmAccount = (props) => {
   const [accountConfirmed, setAccountConfirmed] = useState(false);
 
   const confirmAccount = async (userId) => {
-    props.handleNext();
+   
     try {
       const response = await Axios.put(`updateOperator/${userId}`, {
-        emailVerfied: true,
+        emailVerified: true,
       });
       props.handleNext();
       setAccountConfirmed(true);
@@ -39,6 +39,8 @@ export const ConfirmAccount = (props) => {
       let errorMsg = error.message;
       if (error?.response?.data?.errorMessage)
         errorMsg = error?.response?.data?.errorMessage;
+
+      console.log(errorMsg);
     }
   };
 
@@ -55,6 +57,7 @@ export const ConfirmAccount = (props) => {
       <Button
         variant="contained"
         color="primary"
+        disabled={props.error.status}
         onClick={() => {
           confirmAccount(props.user.userId);
         }}
@@ -117,10 +120,12 @@ export const CreateSubDomain = (props) => {
   };
 
   const addSubDomain = async (e) => {
-  
+  e.preventDefault();
     try{
-      const response = await Axios.put(`updateOrg/${props.uniqueId}`,{name:Organization.name,subdomain:Organization.subdomain})
-    props.handleNext();
+      const response = await Axios.put(`updateOrg/${props.user.uniqueId}`,{name:Organization.name,subdomain:Organization.subdomain})
+      props.setDomain(Organization.subdomain)
+      props.handleNext();
+    
     }
     catch (error) {
       let errorMsg = error.message;
@@ -134,7 +139,7 @@ export const CreateSubDomain = (props) => {
       <h4>Set Up Your Business</h4>
       <img style={{ height: "7em", width: "8em" }} src={handshake} />
 
-      <form className={clx.root} onSubmit={addSubDomain}>
+      <form className={clx.root} onSubmit={addSubDomain} autocomplete="off">
         <div style={{ marginTop: 20, marginBottom: 20 }}>
           <FormControl fullWidth>
             <InputLabel htmlFor="businessName">Business Name</InputLabel>
@@ -185,12 +190,20 @@ export const CreateSubDomain = (props) => {
   );
 };
 
-export const Success = () => {
+export const Success = (props) => {
+
+ 
+const dashboard = () =>{
+  const subdomain = props.subdomain;
+window.location.href = `https://${subdomain}.passwordless.com.au:3115/dashboard`
+}
+
   return (
+
     <>
       <img src={Check} style={{ width: "16rem" }} />
 
-      <Button type="submit" variant="contained" color="primary">
+      <Button type="submit" variant="contained" color="primary" onClick = {dashboard}>
         Continue To DashBoard
       </Button>
     </>

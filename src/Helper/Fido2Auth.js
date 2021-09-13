@@ -91,10 +91,10 @@ export const startAttestation = async (e) => {
 export const registerOrgWithFido = async ({ email:username ,name}) => {
   
   try {
-    const attestation = await Axios.post("registerOrg", { username ,name});
+    const attestation = await Axios.post("registerOperator", { username ,name});
     const { challenge } = attestation.data;
     const attresp = await startAttestation(attestation.data);
-    const verification = await Axios.post("verify-registerorg-attestation", {
+    const verification = await Axios.post("verify-registerOperator-attestation", {
       username,
       credential: attresp,
       challenge,
@@ -113,12 +113,12 @@ export const registerOrgWithFido = async ({ email:username ,name}) => {
 export const loginOrgWithFido = async ({ email:username }) => {
   
   try {
-    const assertion = await Axios.post("loginOrg", { username });
+    const assertion = await Axios.post("loginOperator", { username });
     const { challenge } = assertion.data;
     console.log("assertion",assertion.data);
     const attresp = await startAssertion(assertion.data);
     console.log(attresp);
-    const verification = await Axios.post("verify-loginOrg-assertion", {
+    const verification = await Axios.post("verify-loginOperator-assertion", {
       username,
      ...attresp,
       challenge,

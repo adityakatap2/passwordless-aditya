@@ -1,7 +1,8 @@
 import "./signup.css";
 import { useEffect, useState } from "react";
 import { CircularProgress, Button } from "@material-ui/core";
-
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import CancelIcon from "@material-ui/icons/Cancel";
 import socket from "../../Helper/SocketIOConfig";
 
 import Modal from "../Modal";
@@ -11,11 +12,13 @@ import { generateQRCode, sendMail, getOS } from "../../Helper/Util";
 import { nanoid } from "nanoid";
 import Axios from "../../Helper/Axios";
 import React from "react";
-import {useHistory} from "react-router-dom"
+import { useHistory } from "react-router-dom";
 export default function Register(props) {
   const [errorMessage, setErrorMessage] = useState("");
   const [fidoSupported, setFidoSupported] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [operatorExist, setOperatorExist] = useState(false);
+  const [emailValidated, setEmailValidated] = useState(false);
 
   const history = useHistory();
   const [user, setUser] = useState({
@@ -33,8 +36,6 @@ export default function Register(props) {
   userRef.current = user;
 
   useEffect(() => {
-    detectWebAuthnSupport();
-
     const device = getOS();
     setUser({ ...user, device });
   }, []);
@@ -44,10 +45,8 @@ export default function Register(props) {
       console.log("connected", socket.id);
     });
     socket.on("register-client-response", (data) => {
-      
       closeModal();
       if (data.verified) generateTokenAndSendMail(data);
-
     });
 
     socket.on("login-client-response", (data) => {
@@ -55,21 +54,19 @@ export default function Register(props) {
     });
 
     socket.on("decline-process-response", (data) => {
-     
-
       closeModal();
     });
   }, []);
 
   const generateTokenAndSendMail = async (data) => {
     console.log("generateToken and send mail", data);
-    const { email, name, uniqueId,userId } = data;
+    const { email, name, uniqueId, userId } = data;
 
     try {
       const response = await Axios.post("generateEmailToken", {
         email,
         name,
-userId,
+        userId,
         uniqueId,
       });
 
@@ -83,13 +80,11 @@ userId,
       };
 
       console.log("email data", emailData);
-     await sendMail(emailData);
-     history.push({
-       pathname:"/mailSentSuccess",
-       state: { email,name,accessToken }
-      })
-
-     
+      await sendMail(emailData);
+      history.push({
+        pathname: "/mailSentSuccess",
+        state: { email, name, accessToken },
+      });
     } catch (error) {
       console.log(error);
     }
@@ -97,6 +92,22 @@ userId,
 
   const saveState = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  const checkOperator = async (email) => {
+    try {
+      const response = await Axios.post("checkOperator", { email });
+      const { errorCode } = response.data;
+
+      if (errorCode === 1) setOperatorExist(false);
+      else setOperatorExist(true);
+    } catch (error) {
+      let errorMsg = error.message;
+      if (error?.response?.data?.errorMessage)
+        errorMsg = error?.response?.data?.errorMessage;
+
+      console.log(error);
+    }
   };
 
   const registerForm = async (e) => {
@@ -164,7 +175,7 @@ userId,
         platform,
         email: user.email,
         path: `${window.location.origin}/approve`,
-        name:user.name,
+        name: user.name,
         reqTime: new Date(),
         id: nanoid(20),
       };
@@ -186,11 +197,30 @@ userId,
   const register = async (user) => {
     try {
       const data = await registerOrgWithFido(user);
-      if (data.verified) generateTokenAndSendMail(data.uniqueId);
+      if (data.verified) generateTokenAndSendMail(data);
     } catch (error) {
       console.log(error);
     }
   };
+  let typingTimer = null;
+
+  const handleEmailOnChange = (evt) => {
+    const val = evt.target.value;
+
+    setUser({ ...user, [evt.target.name]: val });
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      if (val) {
+        ValidateEmail(val);
+      }
+    }, 500);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(typingTimer);
+    };
+  }, []);
 
   const login = async (user) => {
     try {
@@ -204,31 +234,20 @@ userId,
     setModalShow(false);
   };
 
-  function detectWebAuthnSupport() {
-    let errorMessage;
-    if (
-      window.PublicKeyCredential === undefined ||
-      typeof window.PublicKeyCredential !== "function"
-    ) {
-      errorMessage =
-        "⚠️ Oh no! This browser doesn't currently support WebAuthn.";
 
-      setFidoSupported(false);
-      setErrorMessage(errorMessage);
-    } else {
-      if (
-        window.location.protocol === "http:" ||
-        window.location.hostname !== "localhost" ||
-        window.location.hostname !== "127.0.0.1"
-      ) {
-        errorMessage =
-          '⚠️ WebAuthn only supports secure connections. For testing over HTTP, you can use the origin "localhost".';
+  function ValidateEmail(mail) {
+  const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
-        setFidoSupported(false);
-        setErrorMessage(errorMessage);
-      }
-    }
+
+ if (re.test(String(mail).toLowerCase()))
+  {
+    setEmailValidated(true)
+    checkOperator(mail);
   }
+   else
+   setEmailValidated(false);
+
+}
 
   return (
     <div className="section">
@@ -247,7 +266,7 @@ userId,
                   >
                     <div className="mt-5 hero-form">
                       {props.type === "Register" ? (
-                        <div className="form-group">
+                        <div className="form-group input-group">
                           <input
                             type="text"
                             className="form-control form-control-lg"
@@ -258,18 +277,56 @@ userId,
                           />
                         </div>
                       ) : null}
-                      <div className="form-group">
+                      <div className="form-group input-group">
                         <input
                           type="email"
                           className="form-control form-control-lg"
                           placeholder="example@domain.com"
                           name="email"
                           required
-                          onChange={saveState}
+                          onChange={handleEmailOnChange}
                         />
+
+                        {user.email.length>0 && (props.type ==="Register" ?  <span class="input-group-append">
+                          <div class="input-group-text">
+                            {emailValidated && !operatorExist  ? <CheckCircleIcon color="inherit"/> : <CancelIcon color="error"/>}
+                          </div>
+                        </span> :  <span class="input-group-append">
+                          <div class="input-group-text">
+                            {emailValidated && operatorExist ? <CheckCircleIcon color="inherit"/> : <CancelIcon color="error" />}
+                          </div>
+                        </span>)}
+                       
+
+                        
                       </div>
 
+                      {props.type === "Register" && operatorExist && (
+                          <div
+                            style={{
+                              fontSize: 14,
+                              marginLeft: 10,
+                              color: "red",
+                            }}
+                          >
+                            This Email already Exist !!
+                          </div>
+                        )}
+
+                        {props.type === "Login" && emailValidated && !operatorExist &&  (
+                          <div
+                            style={{
+                              fontSize: 14,
+                              marginLeft: 10,
+                              color: "red",
+                            }}
+                          >
+                            Operator is not registerd !!
+                          </div>
+                        )}
+
                       <div className=" form-check mb-3">
+                        <p>Select Method for Authentication</p>
                         <div className="form-check form-check-inline">
                           <input
                             className="form-check-input"
@@ -320,7 +377,11 @@ userId,
                           variant="contained"
                           color="primary"
                           size="large"
-                          disabled={loading}
+                          disabled={
+                            props.type === "Register"
+                              ? operatorExist
+                              : !operatorExist
+                          }
                           fullWidth
                         >
                           {props.type}
@@ -328,8 +389,6 @@ userId,
                       </div>
                     </div>
                   </form>
-
-                  {!fidoSupported && <p>{errorMessage}</p>}
                 </div>
                 <div className="hero-right order-1 col-lg-6 order-lg-2">
                   <img

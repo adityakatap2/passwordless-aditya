@@ -122,11 +122,12 @@ export default function VerifyEmail() {
     message: "",
   });
   const [loading, setLoading] = useState(false);
+  const [subdomain,setSubDomain] = useState("");
   
 
   useEffect(() => {
     setLoading(true);
-    Axios.post("verifyEmailToken", { accessToken })
+    Axios.post("verifyToken", { accessToken })
       .then((response) => {
         setLoading(false);
        
@@ -140,7 +141,7 @@ export default function VerifyEmail() {
 
         setError({ status: true, message: errorMsg });
       });
-  }, [accessToken, user]);
+  }, [accessToken]);
   const clx = useStyles();
 
   const [activeStep, setActiveStep] = React.useState(0);
@@ -150,14 +151,18 @@ export default function VerifyEmail() {
     return ["Confirm Account", "Create Business URL", "Success"];
   }
 
+  const setDomain = (domain) =>{
+    setSubDomain(domain)
+  }
+
   function getStepContent(step) {
     switch (step) {
       case 0:
         return <ConfirmAccount handleNext={handleNext} user={user} error={error} />;
       case 1:
-        return <CreateSubDomain handleNext={handleNext}  />;
+        return <CreateSubDomain handleNext={handleNext} user={user} setDomain = {setDomain} />;
       case 2:
-        return <Success />
+        return <Success subdomain={subdomain}/>
 
       default:
         return "Unknown step";
