@@ -163,7 +163,7 @@ export const CreateSubDomain = (props) => {
               name="subdomain"
               endAdornment={
                 <InputAdornment position="end">
-                  {subdomainExist.exist && <CheckCircleIcon color="inherit" />}
+                  {subdomainExist.exist && <CheckCircleIcon style={{color:"#42ba96"}} />}
                   {subdomainExist.noExist && <CancelIcon color="error" />}
                 </InputAdornment>
               }

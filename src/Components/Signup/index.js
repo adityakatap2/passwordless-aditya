@@ -289,11 +289,11 @@ export default function Register(props) {
 
                         {user.email.length>0 && (props.type ==="Register" ?  <span class="input-group-append">
                           <div class="input-group-text">
-                            {emailValidated && !operatorExist  ? <CheckCircleIcon color="inherit"/> : <CancelIcon color="error"/>}
+                            {emailValidated && !operatorExist  ? <CheckCircleIcon style={{color:"#42ba96"}}/> : <CancelIcon color="error"/>}
                           </div>
                         </span> :  <span class="input-group-append">
                           <div class="input-group-text">
-                            {emailValidated && operatorExist ? <CheckCircleIcon color="inherit"/> : <CancelIcon color="error" />}
+                            {emailValidated && operatorExist ? <CheckCircleIcon style={{color:"#42ba96"}}/> : <CancelIcon color="error" />}
                           </div>
                         </span>)}
                        
@@ -306,7 +306,7 @@ export default function Register(props) {
                             style={{
                               fontSize: 14,
                               marginLeft: 10,
-                              color: "red",
+                              color: "#df4759",
                             }}
                           >
                             This Email already Exist !!
@@ -318,7 +318,7 @@ export default function Register(props) {
                             style={{
                               fontSize: 14,
                               marginLeft: 10,
-                              color: "red",
+                              color: "#df4759",
                             }}
                           >
                             Operator is not registerd !!
