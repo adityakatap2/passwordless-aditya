@@ -1,4 +1,5 @@
 
+
    */
   :root {
 	--blue: #007bff;
@@ -368,11 +369,13 @@
   }
   
   h1, .h1 {
-	font-size: 2.5rem;
+	/* font-size: 2.5rem; */
+	font-size: 30px;
   }
   
   h2, .h2 {
-	font-size: 2rem;
+	/* font-size: 2rem; */
+	font-size: 32px!important;
   }
   
   h3, .h3 {
@@ -1752,6 +1755,10 @@
   .table-success > th,
   .table-success > td {
 	background-color: #c3e6cb;
+  }
+  .table-head
+  {
+	  background-color: #848484;
   }
   
   .table-hover .table-success:hover {
@@ -10231,3 +10238,20 @@
   
 
   
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* background-color: #282c34; */
+  /* color: white; */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+

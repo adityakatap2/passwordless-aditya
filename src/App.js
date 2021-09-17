@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,6 +15,8 @@ import Axios from "./Helper/Axios";
 import { BarLoader } from "react-spinners";
 import Approve from "./Components/Approve";
 import MailSent from "./Components/ActivationPage";
+import AdminManagement from "./Components/AdminManagement";
+import UserManagement from "./Components/UserManagement";
 
 const App = () => {
   const [subDomain, setSubDomain] = useState("");
@@ -94,6 +97,14 @@ const App = () => {
                   path="/verifyEmail/:accessToken"
                   component={() => <VerifyEmail />}
                 />
+                 <Route
+                  exact path="/AdminManagement"
+                  component={AdminManagement}
+                />
+                <Route
+                  exact path="/UserManagement"
+                  component={UserManagement}
+                />
                 <Route path="/mailSentSuccess" component={MailSent} />
 
                 <Route component={NotFound} />
@@ -105,5 +116,6 @@ const App = () => {
     </>
   );
 };
+
 
 export default App;

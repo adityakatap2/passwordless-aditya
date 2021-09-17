@@ -1,0 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
+
+.btn {
+  background: #439825;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 1rem;
+  font-family: "Open Sans", sans-serif;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  cursor: pointer;
+}
+.tabpane
+{
+  height:auto;
+      width:100%;
+      padding:50px;
+      background: #eeeeee;
+     
+}
+.bar-title
+{
+  width: 100%;
+  background: white;
+  padding: 20px;
+  color: green;
+  border-bottom:1px solid green;
+  border-radius: 20px;
+}
